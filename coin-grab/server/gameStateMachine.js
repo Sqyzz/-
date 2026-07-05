@@ -44,15 +44,14 @@ function enterStarting(room, wss) {
   let count = STARTING_SECONDS;
 
   const tick = () => {
-    broadcast(room.id, {
-      type: 'COUNTDOWN_UPDATE',
-      data: { phase: 'STARTING', remaining: count },
-    }, wss);
-
     if (count <= 0) {
       enterPlaying(room, wss);
       return;
     }
+    broadcast(room.id, {
+      type: 'COUNTDOWN_UPDATE',
+      data: { phase: 'STARTING', remaining: count },
+    }, wss);
     count--;
     room._startingTimer = setTimeout(tick, 1000);
   };
@@ -74,6 +73,8 @@ export function endGame(room, wss) {
   if (room.state === 'ENDED') return;
   room.state = 'ENDED';
 
+  clearInterval(room._waitingTimer); room._waitingTimer = null;
+  clearTimeout(room._startingTimer); room._startingTimer = null;
   clearTimeout(room._gameTimer);
   stopGameLoop(room);
 

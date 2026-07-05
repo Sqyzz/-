@@ -24,6 +24,22 @@ function send(ws, msg) {
   if (ws.readyState === 1) ws.send(JSON.stringify(msg));
 }
 
+function roomStatePayload(room) {
+  return {
+    players: [...room.players.values()].map(p => ({ id: p.id, name: p.name })),
+    state: room.state,
+    countdown: null,
+    scores: Object.fromEntries(room.scores),
+  };
+}
+
+function broadcastRoomState(room, wss) {
+  broadcast(room.id, {
+    type: 'ROOM_STATE',
+    data: roomStatePayload(room),
+  }, wss);
+}
+
 export function handleMessage(ws, msg, wss) {
   switch (msg.type) {
     case 'JOIN_ROOM':   return handleJoin(ws, msg.data, wss);
@@ -77,22 +93,14 @@ function handleJoin(ws, { roomId, playerName } = {}, wss) {
 
   // 回复加入确认 + 全量状态（附带服务端时间，用于前端计算时钟偏移）
   send(ws, { type: 'JOIN_ACK', data: { playerId, playerName, roomId, serverTime: Date.now() } });
-  send(ws, {
-    type: 'ROOM_STATE',
-    data: {
-      players: [...room.players.values()].map(p => ({ id: p.id, name: p.name })),
-      state: room.state,
-      countdown: null,
-      scores: Object.fromEntries(room.scores),
-    },
-  });
 
-  // 广播新玩家加入（排除自身）
+  // 兼容增量事件；ROOM_STATE 才是前端渲染玩家列表的权威来源
   const joinMsg = { type: 'PLAYER_JOINED', data: { player: { id: playerId, name: playerName } } };
   const payload = JSON.stringify(joinMsg);
   for (const p of room.players.values()) {
     if (p.id !== playerId && p.ws.readyState === 1) p.ws.send(payload);
   }
+  broadcastRoomState(room, wss);
 
   // 触发倒计时逻辑（Task 3 实现）
   startCountdown(room, wss);
@@ -113,6 +121,8 @@ function handleDisconnect(ws, wss) {
   if (room.players.size === 0) {
     cleanupRoomTimers(room); // 清理倒计时/游戏定时器，避免孤儿定时器继续运行
     rooms.delete(roomId);
+  } else {
+    broadcastRoomState(room, wss);
   }
 }
 

@@ -5,12 +5,13 @@ export function startHeartbeat(wss) {
   setInterval(() => {
     const now = Date.now();
     wss.clients.forEach((ws) => {
-      if (!ws.isAlive || (ws.lastPong && now - ws.lastPong > TIMEOUT_MS)) {
+      if (ws.lastPong && now - ws.lastPong > TIMEOUT_MS) {
         ws.terminate(); // 触发 close 事件 → handleDisconnect
         return;
       }
-      ws.isAlive = false; // 下一轮若未收到 PONG 则判为死亡
-      ws.send(JSON.stringify({ type: 'PING', data: { timestamp: now } }));
+      if (ws.readyState === 1) {
+        ws.send(JSON.stringify({ type: 'PING', data: { timestamp: now } }));
+      }
     });
   }, PING_INTERVAL_MS);
 }

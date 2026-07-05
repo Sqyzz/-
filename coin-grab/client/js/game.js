@@ -44,6 +44,11 @@ ws.on('ERROR', ({ code, message }) => {
   location.href = 'lobby.html';
 });
 
+ws.on('CLOSE', () => {
+  sessionStorage.setItem('lobbyError', '连接已断开，请重新加入房间');
+  location.href = 'lobby.html';
+});
+
 ws.on('JOIN_ACK', ({ playerId: newPlayerId, serverTime }) => {
   // 重连后服务端会重新分配 playerId，必须以此为准，否则计分高亮/抢币判定会错位
   if (newPlayerId) {
@@ -57,12 +62,14 @@ ws.on('JOIN_ACK', ({ playerId: newPlayerId, serverTime }) => {
 
 ws.on('ROOM_STATE', ({ players: ps, scores: sc }) => {
   players = ps;
-  scores = sc;
+  scores = sc ?? {};
   renderScoreboard(players, scores, playerId);
 });
 
 ws.on('PLAYER_JOINED', ({ player }) => {
-  players.push(player);
+  if (!players.some(p => p.id === player.id)) {
+    players.push(player);
+  }
   scores[player.id] = 0;
   renderScoreboard(players, scores, playerId);
 });
@@ -83,7 +90,7 @@ ws.on('COUNTDOWN_UPDATE', ({ phase, remaining }) => {
 });
 
 ws.on('GAME_START', ({ duration }) => {
-  phaseLabel.textContent = '抢金币！';
+  phaseLabel.textContent = '打地鼠！';
   clearInterval(gameCountdownTimer);
   let t = duration;
   gameCountdownTimer = setInterval(() => {

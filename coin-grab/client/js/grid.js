@@ -32,7 +32,7 @@ export function spawnCoin(coin, clockOffset = 0) {
 
   cell.dataset.coinId = coin.id;
   cell.classList.add('has-coin');
-  cell.innerHTML = `<span class="coin ${isStaleCoin ? 'coin-stale' : ''}">🪙</span>`;
+  cell.innerHTML = `<span class="coin ${isStaleCoin ? 'coin-stale' : ''}">🦫</span>`;
 }
 
 export function removeCoin(coinId, claimed = false) {

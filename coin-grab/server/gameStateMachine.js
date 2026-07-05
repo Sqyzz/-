@@ -1,5 +1,7 @@
+import { nanoid } from 'nanoid';
 import { broadcast } from './roomManager.js';
 import { startGameLoop, stopGameLoop } from './coinManager.js';
+import { saveGameResult } from './resultRepository.js';
 
 const MAX_PLAYERS = 5;
 const WAITING_SECONDS = 30;
@@ -57,6 +59,8 @@ function enterStarting(room, wss) {
 
 function enterPlaying(room, wss) {
   room.state = 'PLAYING';
+  room.resultKey = nanoid(16);
+  room.startedAt = Date.now();
   broadcast(room.id, { type: 'GAME_START', data: { duration: GAME_DURATION } }, wss);
 
   startGameLoop(room, wss);
@@ -86,4 +90,16 @@ export function endGame(room, wss) {
   }
 
   broadcast(room.id, { type: 'GAME_END', data: { scores, winner } }, wss);
+
+  // 异步写库，不阻塞主循环
+  const players = [...room.players.values()].map(p => ({ id: p.id, name: p.name }));
+  saveGameResult({
+    resultKey: room.resultKey ?? nanoid(16),
+    roomId:    room.id,
+    startedAt: room.startedAt ?? null,
+    endedAt:   Date.now(),
+    winner,
+    scores,
+    players,
+  }).catch(err => console.error('[endGame] saveGameResult error:', err.message));
 }

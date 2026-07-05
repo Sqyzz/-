@@ -11,6 +11,7 @@ if (!playerId || !roomId) location.href = 'lobby.html';
 // 本地状态
 let players = [];
 let scores = {};
+let clockOffset = 0; // 服务端时钟 - 本地时钟，用于网络延迟补偿
 const activeCoinMap = new Map(); // coinId → { row, col }
 const lockedCoins = new Set();   // 已发出请求、等待服务端确认的金币
 
@@ -27,7 +28,11 @@ initGrid(handleCellClick);
 })();
 
 // ── 消息处理 ────────────────────────────────────────────────────
-ws.on('JOIN_ACK', () => {}); // 已加入，等待 ROOM_STATE
+ws.on('JOIN_ACK', ({ serverTime }) => {
+  // 记录服务端与本地时钟的偏移：serverTime - localTime
+  // 后续 localTime + clockOffset ≈ serverTime
+  clockOffset = serverTime - Date.now();
+}); // 已加入，等待 ROOM_STATE
 
 ws.on('ROOM_STATE', ({ players: ps, scores: sc }) => {
   players = ps;
@@ -67,7 +72,7 @@ ws.on('GAME_START', ({ duration }) => {
 
 ws.on('COIN_SPAWN', ({ coin }) => {
   activeCoinMap.set(coin.id, coin);
-  spawnCoin(coin);
+  spawnCoin(coin, clockOffset);
 });
 
 ws.on('COIN_CLAIMED', ({ coinId, claimedBy, scores: newScores }) => {

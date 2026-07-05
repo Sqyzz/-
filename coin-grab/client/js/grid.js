@@ -15,9 +15,23 @@ export function initGrid(onCellClick) {
   }
 }
 
-export function spawnCoin(coin) {
+export function spawnCoin(coin, clockOffset = 0) {
   const cell = getCell(coin.row, coin.col);
   if (!cell) return;
+
+  // 网络延迟补偿：若金币在服务端已存活超过 6000ms，视为陈旧金币
+  // （TTL=8000ms，剩余寿命不足 2000ms），降低点击优先级
+  if (coin.spawnedAt) {
+    const localNow = Date.now() + clockOffset; // 折算到服务端时钟
+    const age = localNow - coin.spawnedAt;
+    if (age > 6000) {
+      cell.dataset.coinId = coin.id;
+      cell.classList.add('has-coin', 'coin-stale');
+      cell.innerHTML = `<span class="coin">🪙</span>`;
+      return;
+    }
+  }
+
   cell.dataset.coinId = coin.id;
   cell.classList.add('has-coin');
   cell.innerHTML = `<span class="coin">🪙</span>`;

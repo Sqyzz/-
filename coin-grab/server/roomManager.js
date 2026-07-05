@@ -67,8 +67,8 @@ function handleJoin(ws, { roomId, playerName } = {}, wss) {
   room.players.set(playerId, player);
   room.scores.set(playerId, 0);
 
-  // 回复加入确认 + 全量状态
-  send(ws, { type: 'JOIN_ACK', data: { playerId, playerName, roomId } });
+  // 回复加入确认 + 全量状态（附带服务端时间，用于前端计算时钟偏移）
+  send(ws, { type: 'JOIN_ACK', data: { playerId, playerName, roomId, serverTime: Date.now() } });
   send(ws, {
     type: 'ROOM_STATE',
     data: {

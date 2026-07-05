@@ -1,0 +1,19 @@
+{
+  "name": "coin-grab",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "nanoid": "^5.1.16",
+    "ws": "^8.21.0"
+  }
+}

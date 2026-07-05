@@ -39,6 +39,19 @@ function handleJoin(ws, { roomId, playerName } = {}, wss) {
   }
 
   let room = rooms.get(roomId);
+
+  // 游戏进行中拒绝
+  if (room && room.state === 'PLAYING') {
+    return send(ws, { type: 'ERROR', data: { code: 'GAME_IN_PROGRESS', message: '游戏已开始，无法加入' } });
+  }
+
+  // 已开始倒计时但房间无人（上一次所有人都断开了）：清理掉，重建一个干净房间
+  if (room && (room.state === 'ENDED' || room.players.size === 0)) {
+    cleanupRoomTimers(room);
+    rooms.delete(roomId);
+    room = null;
+  }
+
   if (!room) {
     room = {
       id: roomId,
@@ -47,11 +60,6 @@ function handleJoin(ws, { roomId, playerName } = {}, wss) {
       scores: new Map(),
     };
     rooms.set(roomId, room);
-  }
-
-  // 游戏进行中拒绝
-  if (room.state === 'PLAYING') {
-    return send(ws, { type: 'ERROR', data: { code: 'GAME_IN_PROGRESS', message: '游戏已开始，无法加入' } });
   }
 
   // 房间已满拒绝

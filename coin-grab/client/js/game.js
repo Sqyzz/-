@@ -2,11 +2,14 @@ import * as ws from './wsClient.js';
 import { initGrid, spawnCoin, removeCoin, lockCoin, unlockCoin } from './grid.js';
 import { renderScoreboard } from './scoreboard.js';
 
-let playerId = sessionStorage.getItem('playerId');
+let playerId = sessionStorage.getItem('playerId'); // 可为 null，待 JOIN_ACK 赋值
 const playerName = sessionStorage.getItem('playerName');
 const roomId = sessionStorage.getItem('roomId');
 
-if (!playerId || !roomId) location.href = 'lobby.html';
+if (!playerName || !roomId) {
+  // 大厅未填完信息就进来了，打回大厅
+  location.href = 'lobby.html';
+}
 
 // 本地状态
 let players = [];
@@ -24,11 +27,23 @@ const overlay = document.getElementById('overlay');
 initGrid(handleCellClick);
 
 (async () => {
-  await ws.connect(`ws://${location.host}`);
+  try {
+    await ws.connect(`ws://${location.host}`);
+  } catch {
+    sessionStorage.setItem('lobbyError', '连接服务器失败，请刷新重试');
+    location.href = 'lobby.html';
+    return;
+  }
   ws.send({ type: 'JOIN_ROOM', data: { roomId, playerName } });
 })();
 
 // ── 消息处理 ────────────────────────────────────────────────────
+ws.on('ERROR', ({ code, message }) => {
+  // 房间满员、游戏进行中等服务端拒绝：把提示带回大厅
+  sessionStorage.setItem('lobbyError', message || '加入失败');
+  location.href = 'lobby.html';
+});
+
 ws.on('JOIN_ACK', ({ playerId: newPlayerId, serverTime }) => {
   // 重连后服务端会重新分配 playerId，必须以此为准，否则计分高亮/抢币判定会错位
   if (newPlayerId) {

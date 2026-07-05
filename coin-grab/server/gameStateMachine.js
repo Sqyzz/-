@@ -81,6 +81,7 @@ export function cleanupRoomTimers(room) {
 export function endGame(room, wss) {
   if (room.state === 'ENDED') return;
   room.state = 'ENDED';
+  console.log(`[endGame] room=${room.id} players=${room.players.size} state was → ENDED`);
 
   clearInterval(room._waitingTimer); room._waitingTimer = null;
   clearTimeout(room._startingTimer); room._startingTimer = null;

@@ -1,8 +1,5 @@
 import { broadcast } from './roomManager.js';
-
-// Stub: Task 4 (coinManager) will replace these
-function startGameLoop(room, wss) {}
-function stopGameLoop(room) {}
+import { startGameLoop, stopGameLoop } from './coinManager.js';
 
 const MAX_PLAYERS = 5;
 const WAITING_SECONDS = 30;

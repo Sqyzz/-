@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import { startCountdown } from './gameStateMachine.js';
+import { claimCoin } from './coinManager.js';
 
 const MAX_PLAYERS = 5;
 const rooms = new Map(); // roomId → Room
@@ -106,13 +107,15 @@ function handleDisconnect(ws, wss) {
   }
 }
 
-// Stub: Task 4 (coinManager) will complete the claim logic
-// handleClaim is also exported so coinManager can call it if needed
+// Task 4: handleClaim calls coinManager for atomic coin claiming
 export function handleClaim(ws, data, wss) {
   if (!data) return;
   const { roomId, coinId } = data;
   const room = rooms.get(roomId);
-  if (!room) return;
-  if (room.state !== 'PLAYING') return;
-  // Full implementation deferred to Task 4 (coinManager.js)
+  if (!room || room.state !== 'PLAYING') return;
+  if (!ws.playerId) return;
+
+  claimCoin(room, coinId, ws.playerId, wss);
+  // 无论成功失败，后端不单独回复——COIN_CLAIMED 广播即为确认
+  // 失败时前端依靠 COIN_CLAIMED 不到达来触发回滚
 }

@@ -1,7 +1,5 @@
 import { nanoid } from 'nanoid';
-
-// Stub: Task 3 will replace this with the real gameStateMachine implementation
-function startCountdown(room, wss) {}
+import { startCountdown } from './gameStateMachine.js';
 
 const MAX_PLAYERS = 5;
 const rooms = new Map(); // roomId → Room

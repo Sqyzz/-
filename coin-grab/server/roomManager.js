@@ -74,6 +74,7 @@ function handleJoin(ws, { roomId, playerName } = {}, wss) {
     data: {
       players: [...room.players.values()].map(p => ({ id: p.id, name: p.name })),
       state: room.state,
+      countdown: null,
       scores: Object.fromEntries(room.scores),
     },
   });

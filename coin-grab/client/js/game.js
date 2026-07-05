@@ -14,6 +14,7 @@ let scores = {};
 let clockOffset = 0; // 服务端时钟 - 本地时钟，用于网络延迟补偿
 const activeCoinMap = new Map(); // coinId → { row, col }
 const lockedCoins = new Set();   // 已发出请求、等待服务端确认的金币
+let gameCountdownTimer = null;
 
 const phaseLabel = document.getElementById('phaseLabel');
 const countdownEl = document.getElementById('countdown');
@@ -63,10 +64,11 @@ ws.on('COUNTDOWN_UPDATE', ({ phase, remaining }) => {
 
 ws.on('GAME_START', ({ duration }) => {
   phaseLabel.textContent = '抢金币！';
+  clearInterval(gameCountdownTimer);
   let t = duration;
-  const timer = setInterval(() => {
+  gameCountdownTimer = setInterval(() => {
     countdownEl.textContent = t--;
-    if (t < 0) clearInterval(timer);
+    if (t < 0) { clearInterval(gameCountdownTimer); gameCountdownTimer = null; }
   }, 1000);
 });
 

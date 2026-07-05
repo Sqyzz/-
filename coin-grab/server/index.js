@@ -1,11 +1,14 @@
 import { createServer } from 'http';
 import express from 'express';
 import { WebSocketServer } from 'ws';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import { handleMessage } from './roomManager.js';
 import { startHeartbeat } from './heartbeat.js';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
-app.use(express.static('../client'));
+app.use(express.static(join(__dirname, '../client')));
 
 const server = createServer(app);
 const wss = new WebSocketServer({ server });

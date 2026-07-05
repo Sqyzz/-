@@ -1,0 +1,14 @@
+# Runtime requirements
+Node.js >= 18
+npm >= 9
+MySQL >= 8.0
+
+# Node.js package dependencies
+express == 4.x
+ws == 8.x
+mysql2 == 3.x
+dotenv == 16.x
+nanoid == latest
+
+# Optional manual testing tool
+wscat == latest

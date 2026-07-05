@@ -70,6 +70,14 @@ function enterPlaying(room, wss) {
   }, GAME_DURATION * 1000);
 }
 
+// 清理房间的所有定时器与游戏循环（房间被销毁时调用，避免孤儿定时器继续运行）
+export function cleanupRoomTimers(room) {
+  clearInterval(room._waitingTimer); room._waitingTimer = null;
+  clearTimeout(room._startingTimer); room._startingTimer = null;
+  clearTimeout(room._gameTimer); room._gameTimer = null;
+  stopGameLoop(room);
+}
+
 export function endGame(room, wss) {
   if (room.state === 'ENDED') return;
   room.state = 'ENDED';

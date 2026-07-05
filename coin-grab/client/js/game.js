@@ -2,7 +2,7 @@ import * as ws from './wsClient.js';
 import { initGrid, spawnCoin, removeCoin, lockCoin, unlockCoin } from './grid.js';
 import { renderScoreboard } from './scoreboard.js';
 
-const playerId = sessionStorage.getItem('playerId');
+let playerId = sessionStorage.getItem('playerId');
 const playerName = sessionStorage.getItem('playerName');
 const roomId = sessionStorage.getItem('roomId');
 
@@ -29,7 +29,12 @@ initGrid(handleCellClick);
 })();
 
 // ── 消息处理 ────────────────────────────────────────────────────
-ws.on('JOIN_ACK', ({ serverTime }) => {
+ws.on('JOIN_ACK', ({ playerId: newPlayerId, serverTime }) => {
+  // 重连后服务端会重新分配 playerId，必须以此为准，否则计分高亮/抢币判定会错位
+  if (newPlayerId) {
+    playerId = newPlayerId;
+    sessionStorage.setItem('playerId', newPlayerId);
+  }
   // 记录服务端与本地时钟的偏移：serverTime - localTime
   // 后续 localTime + clockOffset ≈ serverTime
   clockOffset = serverTime - Date.now();

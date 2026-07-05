@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { startCountdown } from './gameStateMachine.js';
+import { startCountdown, cleanupRoomTimers } from './gameStateMachine.js';
 import { claimCoin } from './coinManager.js';
 
 const MAX_PLAYERS = 5;
@@ -103,8 +103,8 @@ function handleDisconnect(ws, wss) {
   broadcast(roomId, { type: 'PLAYER_LEFT', data: { playerId } }, wss);
 
   if (room.players.size === 0) {
+    cleanupRoomTimers(room); // 清理倒计时/游戏定时器，避免孤儿定时器继续运行
     rooms.delete(roomId);
-    // 游戏循环清理在 gameStateMachine 中处理
   }
 }
 

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>抢金币 - 大厅</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="lobby-container">
+    <h1>🪙 多人抢金币</h1>
+    <form id="joinForm">
+      <input id="roomId" type="text" placeholder="房间号" maxlength="20" required>
+      <input id="playerName" type="text" placeholder="你的昵称" maxlength="12" required>
+      <button type="submit">加入房间</button>
+    </form>
+    <p id="errorMsg" class="error" hidden></p>
+  </div>
+  <script type="module" src="js/lobby.js"></script>
+</body>
+</html>

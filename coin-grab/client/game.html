@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>抢金币</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="game-layout">
+  <header>
+    <div id="phaseLabel" class="phase-label">等待玩家加入...</div>
+    <div id="countdown" class="countdown">--</div>
+  </header>
+
+  <aside id="scoreboard">
+    <h2>积分榜</h2>
+    <ul id="scoreList"></ul>
+  </aside>
+
+  <main>
+    <div id="grid" class="grid"></div>
+  </main>
+
+  <div id="overlay" class="overlay" hidden>
+    <div class="overlay-content">
+      <h2 id="overlayTitle"></h2>
+      <ul id="finalScores"></ul>
+      <button onclick="location.href='lobby.html'">返回大厅</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/game.js"></script>
+</body>
+</html>
